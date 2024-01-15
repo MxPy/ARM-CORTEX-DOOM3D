@@ -409,16 +409,17 @@ void DrawGun(tContext *sContext){
 void DrawMenuTitle(tContext *sContext){
     GrContextFontSet(sContext, g_psFontCm20b);
     GrContextForegroundSet(sContext, ClrRed);
-    GrStringDrawCentered(sContext, "DOOM", -1, 142, 52, 0);
+    GrStringDrawCentered(sContext, "DOOM", -1, 152, 52, 0);
     GrContextForegroundSet(sContext, ClrWhite);
-    GrStringDrawCentered(sContext, "DOOM", -1, 140, 50, 0);
+    GrStringDrawCentered(sContext, "DOOM", -1, 150, 50, 0);
     GrContextForegroundSet(sContext, ClrRed);
-    GrStringDrawCentered(sContext, "3D", -1, 192, 52, 0);
+    GrStringDrawCentered(sContext, "3D", -1, 202, 52, 0);
     GrContextForegroundSet(sContext, ClrWhite);
-    GrStringDrawCentered(sContext, "3D", -1, 190, 50, 0);
+    GrStringDrawCentered(sContext, "3D", -1, 200, 50, 0);
     GrContextFontSet(sContext, g_psFontCm12);
-    GrStringDrawCentered(sContext, "ARM Cortex-M version 0.0.1a", -1, 150, 70, 0);
-    
+    GrStringDrawCentered(sContext, "ARM Cortex-M version 0.0.1a", -1, 160, 70, 0);
+    GrContextFontSet(sContext, g_psFontFixed6x8);
+    GrStringDrawCentered(sContext, "by Dr whomst'd've", -1, 170, 80, 0);
 }
 
 int main(void)
@@ -455,10 +456,25 @@ uint32_t semiDarkRed = clacRGB(240,29,0);
 uint32_t darkRed = clacRGB(180,21,0);
 
     DrawMenuTitle(&sContext);
-while(true){
     
+    GrContextFontSet(&sContext, g_psFontCm20b);
+    GrContextForegroundSet(&sContext, ClrBlack);
+    int xdd = 0;
+while(true){
+    if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_1) == GPIO_PIN_1){ break;}
+    
+    if(xdd >= 2000){
+        GrContextForegroundSet(&sContext, ClrBlack);
+        xdd = 0;
+    }
+    if(xdd >= 1000){
+        GrContextForegroundSet(&sContext, ClrWhite);
+    }
+    GrStringDrawCentered(&sContext, "PRESS 'J1' TO PLAY", -1, 160, 150, 0);
+    xdd++;
 }
 
+GrContextFontSet(&sContext, g_psFontCm20b);
 //RENDERER
 mesh meshCube;
 meshCube.counter = 0;
@@ -466,7 +482,6 @@ mat4x4 matProj;
 float fThetaZ;
 float fThetaX;
 float fThetaY;
-GrContextFontSet(&sContext, g_psFontCm20b);
 
 int jj=0;
 while(jj<=50){
