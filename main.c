@@ -406,6 +406,10 @@ void DrawGun(tContext *sContext){
     GrLineDraw(sContext, 175, 240, 160, 200);
 }
 
+void DrawShot(tContext *sContext){
+    GrContextForegroundSet(sContext, ClrYellow);
+}
+
 void DrawMenuTitle(tContext *sContext){
     GrContextFontSet(sContext, g_psFontCm20b);
     GrContextForegroundSet(sContext, ClrRed);
@@ -511,7 +515,7 @@ vec3d vLookDir = {0, 0 ,1};
 
 float fElapsedTime = 0.3;
 
-int fps = 1000000;
+int fps = 10000000;
 int fpsI = 0;
 float x = 0.0f;
 float y = 0.0f;
