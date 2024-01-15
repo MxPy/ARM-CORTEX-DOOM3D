@@ -146,6 +146,8 @@ void DrawTriangle(tContext *sContext, int x1, int y1, int x2, int y2, int x3, in
 }
 
 
+
+
 void FillTriangle(tContext *sContext, int x1, int y1, int x2, int y2, int x3, int y3) {
     float d1 = (float) sqrt((pow((y2-y1),2))+(pow((x2-x1),2)));
     float d2 = (float) sqrt((pow((y3-y2),2))+(pow((x3-x2),2)));
@@ -375,6 +377,24 @@ void createPlaneBOTTOM(mesh* meshCube, float x, float y, float z, float size) {
     meshCube->tris[meshCube->counter++] = (struct triangle){{x + size, y, z + size, 1, x, y, z, 1, x + size, y, z, 1}};
 }
 
+void GenerateCorridorX(mesh* meshCube, float x, float y, float z){
+    createPlaneBOTTOM(meshCube, -5.0f+x*10, 1.0f+y*10, -5.0f+z*10, 10.0f);
+    createPlaneBOTTOM(meshCube, 5.0f+x*10, -9.00f+y*10, 5.0f+z*10, -10.0f);
+    createPlaneSOUTH(meshCube, -5.0f+x*10, 1.0f-10.0f+y*10, 5.0f+z*10, 10.0f);
+    createPlaneSOUTH(meshCube, -5.0f+x*10, 1.0f-10.0f+y*10, -5.0f+z*10, 10.0f);
+}
+void GenerateCorridorWestClosedX(mesh* meshCube, float x, float y, float z){
+    createPlaneBOTTOM(meshCube, -5.0f+x*10, 1.0f+y*10, -5.0f+z*10, 10.0f);
+    createPlaneBOTTOM(meshCube, 5.0f+x*10, -9.00f+y*10, 5.0f+z*10, -10.0f);
+    createPlaneSOUTH(meshCube, -5.0f+x*10, 1.0f-10.0f+y*10, 5.0f+z*10, 10.0f);
+    createPlaneSOUTH(meshCube, -5.0f+x*10, 1.0f-10.0f+y*10, -5.0f+z*10, 10.0f);
+    createPlaneWEST(meshCube, -5.0f+x*10, 1.0f-10.0f+y*10, -5.0f+z*10, 10.0f);
+}
+
+void DrawGui(tContext *sContext){
+    GrContextForegroundSet(sContext, ClrRed);
+    GrLineDraw(sContext, x1, y1, x2, y2);
+}
 
 int main(void)
 {
@@ -569,7 +589,7 @@ while(true){
                 //normal.z = line1.x * line2.y - line1.y * line2.x;
 
                 // It's normally normal to normalise the normal
-                if (abs(vCamera.x-triTranslated.p[0].x)<20){//(Vector_DotProduct(&normal, &vCameraRay) < 0.0f){
+                if ((abs(vCamera.x-triTranslated.p[0].x)<=20) && (abs(vCamera.z-triTranslated.p[0].z)<=20)){//(Vector_DotProduct(&normal, &vCameraRay) < 0.0f){
                     // Project triangles from 3D --> 2D
                     MultiplyMatrixVector(&triTranslated.p[0], &triViewd.p[0], &matView);
                     MultiplyMatrixVector(&triTranslated.p[1], &triViewd.p[1], &matView);
