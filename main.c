@@ -387,10 +387,15 @@ void GenerateCorridorWestClosedX(mesh* meshCube, float x, float y, float z){
     createPlaneWEST(meshCube, -5.0f+x*10, 1.0f-10.0f+y*10, -5.0f+z*10, 10.0f);
 }
 
-void DrawGui(tContext *sContext){
+void DrawGui(tContext *sContext, int ammo, int health){
+    char str[20];
+    sprintf(str, "%d", ammo);
+    char str2[20];
+    sprintf(str2, "%d", health);
+
     GrContextForegroundSet(sContext, ClrRed);
-    GrStringDrawCentered(sContext, "50", -1, 50, 210, 0);
-    GrStringDrawCentered(sContext, "100", -1, 320-50, 210, 0);
+    GrStringDrawCentered(sContext, str, -1, 50, 210, 0);
+    GrStringDrawCentered(sContext, str2, -1, 320-50, 210, 0);
     GrContextForegroundSet(sContext, ClrWhite);
     GrStringDrawCentered(sContext, "AMMO", -1, 50, 230, 0);
     GrContextForegroundSet(sContext, ClrWhite);
@@ -408,6 +413,14 @@ void DrawGun(tContext *sContext){
 
 void DrawShot(tContext *sContext){
     GrContextForegroundSet(sContext, ClrYellow);
+    GrLineDraw(sContext, 147, 210, 135, 190);
+    GrLineDraw(sContext, 165, 210, 175, 190);
+
+    GrLineDraw(sContext, 135, 190, 145, 195);
+    GrLineDraw(sContext, 175, 190, 165, 195);
+
+    GrLineDraw(sContext, 155, 175, 145, 195);
+    GrLineDraw(sContext, 155, 175, 165, 195);
 }
 
 void DrawMenuTitle(tContext *sContext){
@@ -513,7 +526,7 @@ matProj.m[3][3] = 0.0f;
 vec3d vCamera = {0, 0 ,0};
 vec3d vLookDir = {0, 0 ,1};
 
-float fElapsedTime = 0.3;
+float fElapsedTime = 0.2;
 
 int fps = 10000000;
 int fpsI = 0;
@@ -521,6 +534,9 @@ float x = 0.0f;
 float y = 0.0f;
 float z = 0.0f;
 float yaw = 0;
+int shotAnimTime = 0;
+int ammo = 50;
+int health = 100;
 while(true){
     
     if(fpsI == fps){
@@ -531,6 +547,7 @@ while(true){
         if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_4) == GPIO_PIN_4){ vCamera = Vector_Sub(&vCamera, &vForward);}
         if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_3) == GPIO_PIN_3){ vCamera.y += 1.0f * fElapsedTime;}
         if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_2) == GPIO_PIN_2){ vCamera.y -= 1.0f * fElapsedTime;}
+        if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_1) == GPIO_PIN_1){ shotAnimTime = 100; ammo--;;}
         _clear_screen(&sContext);
 
         vec3d vUp = {0,1,0};
@@ -667,9 +684,12 @@ while(true){
                             triProjected.p[2].x, triProjected.p[2].y);
                     }
                 }
-                DrawGui(&sContext);
+                DrawGui(&sContext, ammo, health);
                 DrawGun(&sContext);
-
+                if(shotAnimTime>0){
+                    DrawShot(&sContext);
+                    shotAnimTime--;
+                }
             }
             fpsI = 0;
         }
