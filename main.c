@@ -1,12 +1,8 @@
-//TODO: Zmień fonty
-
-
 //*****************************************************************************
-// hello.c - Simple hello world example.
-//
-// Maciej Kucia July 2013
-//
-// This is part of revision 1.0 of the EK-LM4F232 Firmware Package.
+// Dear Programmer:
+// When I wrote this, only God and I understood what I was doing
+// Now, God only knows
+// Do not waste your time trying to figure it out
 //*****************************************************************************
 #include <stdint.h>
 #include <stdbool.h>
@@ -410,6 +406,21 @@ void DrawGun(tContext *sContext){
     GrLineDraw(sContext, 175, 240, 160, 200);
 }
 
+void DrawMenuTitle(tContext *sContext){
+    GrContextFontSet(sContext, g_psFontCm20b);
+    GrContextForegroundSet(sContext, ClrRed);
+    GrStringDrawCentered(sContext, "DOOM", -1, 142, 52, 0);
+    GrContextForegroundSet(sContext, ClrWhite);
+    GrStringDrawCentered(sContext, "DOOM", -1, 140, 50, 0);
+    GrContextForegroundSet(sContext, ClrRed);
+    GrStringDrawCentered(sContext, "3D", -1, 192, 52, 0);
+    GrContextForegroundSet(sContext, ClrWhite);
+    GrStringDrawCentered(sContext, "3D", -1, 190, 50, 0);
+    GrContextFontSet(sContext, g_psFontCm12);
+    GrStringDrawCentered(sContext, "ARM Cortex-M version 0.0.1a", -1, 150, 70, 0);
+    
+}
+
 int main(void)
 {
 tContext sContext;
@@ -442,6 +453,11 @@ GPIOPinTypeGPIOInput(GPIO_PORTJ_BASE, GPIO_PINS_ALL);
 uint32_t red = clacRGB(255,52,25);
 uint32_t semiDarkRed = clacRGB(240,29,0);
 uint32_t darkRed = clacRGB(180,21,0);
+
+    DrawMenuTitle(&sContext);
+while(true){
+    
+}
 
 //RENDERER
 mesh meshCube;
