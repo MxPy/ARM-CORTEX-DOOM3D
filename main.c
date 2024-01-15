@@ -134,8 +134,8 @@ void MultiplyMatrixVector(vec3d* i, vec3d* o, mat4x4* m)
     }
 }
 
-void DrawTriangle(tContext *sContext, int x1, int y1, int x2, int y2, int x3, int y3){
-    GrContextForegroundSet(sContext, ClrWhite);
+void DrawTriangle(tContext *sContext, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color){
+    GrContextForegroundSet(sContext, color);
     GrLineDraw(sContext, x1, y1, x2, y2);
     GrLineDraw(sContext, x2, y2, x3, y3);
     GrLineDraw(sContext, x3, y3, x1, y1);
@@ -494,7 +494,9 @@ while(true){
 GrContextFontSet(&sContext, g_psFontCm20b);
 //RENDERER
 mesh meshCube;
+mesh meshEnemies;
 meshCube.counter = 0;
+meshEnemies.counter = 0;
 mat4x4 matProj;
 float fThetaZ;
 float fThetaX;
@@ -510,6 +512,8 @@ while(jj<=50){
 }
 createPlaneWEST(&meshCube, -5.0f, 1.0f-10.0f, -5.0f, 10.0f);
 //createPlaneNORTH(&meshCube, -5.0f, 1.0f-10.0f, -5.0f, 10.0f);
+
+createCube(&meshEnemies,  -1.0f, 1.0f, -1.0f, 2.0f);
 
 float fNear = 0.1f;
 float fFar = 1000.0f;
@@ -681,7 +685,7 @@ while(true){
                         // Rasterize triangle
                         DrawTriangle(&sContext, triProjected.p[0].x, triProjected.p[0].y,
                             triProjected.p[1].x, triProjected.p[1].y,
-                            triProjected.p[2].x, triProjected.p[2].y);
+                            triProjected.p[2].x, triProjected.p[2].y, ClrWhite);
                     }
                 }
                 DrawGui(&sContext, ammo, health);
@@ -689,6 +693,91 @@ while(true){
                 if(shotAnimTime>0){
                     DrawShot(&sContext);
                     shotAnimTime--;
+                }
+            }
+            for (int i = 0; i<= meshEnemies.counter; i++)
+            {
+                triangle tri = meshEnemies.tris[i];
+
+                triangle triProjected, triTranslated, triRotatedZ, triRotatedZX, triRotatedZXY, triViewd;
+
+                // Rotate in Z-Axis
+                MultiplyMatrixVector(&tri.p[0], &triRotatedZ.p[0], &matRotZ);
+                MultiplyMatrixVector(&tri.p[1], &triRotatedZ.p[1],& matRotZ);
+                MultiplyMatrixVector(&tri.p[2], &triRotatedZ.p[2], &matRotZ);
+
+                // Rotate in X-Axis
+                MultiplyMatrixVector(&triRotatedZ.p[0], &triRotatedZX.p[0], &matRotX);
+                MultiplyMatrixVector(&triRotatedZ.p[1], &triRotatedZX.p[1], &matRotX);
+                MultiplyMatrixVector(&triRotatedZ.p[2], &triRotatedZX.p[2], &matRotX);
+
+                // Rotate in YAxis
+                MultiplyMatrixVector(&triRotatedZX.p[0], &triRotatedZXY.p[0], &matRotY);
+                MultiplyMatrixVector(&triRotatedZX.p[1], &triRotatedZXY.p[1], &matRotY);
+                MultiplyMatrixVector(&triRotatedZX.p[2], &triRotatedZXY.p[2], &matRotY);
+
+                
+                // Offset into the screen
+                MultiplyMatrixVector(&triRotatedZXY.p[0], &triTranslated.p[0], &matTrans);
+                MultiplyMatrixVector(&triRotatedZXY.p[1], &triTranslated.p[1], &matTrans);
+                MultiplyMatrixVector(&triRotatedZXY.p[2], &triTranslated.p[2], &matTrans);
+
+
+                // Use Cross-Product to get surface normal
+                vec3d normal, line1, line2, vCameraRay;
+                line1 = Vector_Sub(&triTranslated.p[1], &triTranslated.p[0]);
+			    line2 = Vector_Sub(&triTranslated.p[2], &triTranslated.p[0]);
+                normal = Vector_CrossProduct(&line1, &line2);
+
+                normal = Vector_Normalise(&normal);
+			    // Get Ray from triangle to camera
+			    vCameraRay = Vector_Sub(&triTranslated.p[0], &vCamera);
+
+                //line1.x = triTranslated.p[1].x - triTranslated.p[0].x;
+                //line1.y = triTranslated.p[1].y - triTranslated.p[0].y;
+                //line1.z = triTranslated.p[1].z - triTranslated.p[0].z;
+
+                //line2.x = triTranslated.p[2].x - triTranslated.p[0].x;
+                //line2.y = triTranslated.p[2].y - triTranslated.p[0].y;
+                //line2.z = triTranslated.p[2].z - triTranslated.p[0].z;
+
+                //normal.x = line1.y * line2.z - line1.z * line2.y;
+                //normal.y = line1.z * line2.x - line1.x * line2.z;
+                //normal.z = line1.x * line2.y - line1.y * line2.x;
+
+                // It's normally normal to normalise the normal
+                if ((abs(vCamera.x-triTranslated.p[0].x)<=20) && (abs(vCamera.z-triTranslated.p[0].z)<=20)){//(Vector_DotProduct(&normal, &vCameraRay) < 0.0f){
+                    // Project triangles from 3D --> 2D
+                    MultiplyMatrixVector(&triTranslated.p[0], &triViewd.p[0], &matView);
+                    MultiplyMatrixVector(&triTranslated.p[1], &triViewd.p[1], &matView);
+                    MultiplyMatrixVector(&triTranslated.p[2], &triViewd.p[2], &matView);
+
+                    int nClippedTriangles = 0;
+                    triangle clipped[2];
+                    nClippedTriangles = Triangle_ClipAgainstPlane((vec3d){ 0.0f, 0.0f, 0.1f, 1.0f }, (vec3d){ 0.0f, 0.0f, 1.0f, 1.0f }, &triViewd, &clipped[0], &clipped[1]);
+                    for (int n = 0; n < nClippedTriangles; n++)
+				    {
+                        MultiplyMatrixVector(&clipped->p[0], &triProjected.p[0], &matProj);
+                        MultiplyMatrixVector(&clipped->p[1], &triProjected.p[1], &matProj);
+                        MultiplyMatrixVector(&clipped->p[2], &triProjected.p[2], &matProj);
+                        
+
+                        // Scale into view
+                        triProjected.p[0].x += 1.0f; triProjected.p[0].y += 1.0f;
+                        triProjected.p[1].x += 1.0f; triProjected.p[1].y += 1.0f;
+                        triProjected.p[2].x += 1.0f; triProjected.p[2].y += 1.0f;
+                        triProjected.p[0].x *= 0.5f * (float)MAXW;
+                        triProjected.p[0].y *= 0.5f * (float)MAXH;
+                        triProjected.p[1].x *= 0.5f * (float)MAXW;
+                        triProjected.p[1].y *= 0.5f * (float)MAXH;
+                        triProjected.p[2].x *= 0.5f * (float)MAXW;
+                        triProjected.p[2].y *= 0.5f * (float)MAXH;
+
+                        // Rasterize triangle
+                        DrawTriangle(&sContext, triProjected.p[0].x, triProjected.p[0].y,
+                            triProjected.p[1].x, triProjected.p[1].y,
+                            triProjected.p[2].x, triProjected.p[2].y, ClrRed);
+                    }
                 }
             }
             fpsI = 0;
