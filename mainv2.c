@@ -404,23 +404,23 @@ void DrawGui(tContext *sContext, int ammo, int health){
 
 void DrawGun(tContext *sContext){
     GrContextForegroundSet(sContext, ClrRed);
-    GrLineDraw(sContext, 135, 240, 150, 200);
-    GrLineDraw(sContext, 154, 195, 154, 205);
-    GrLineDraw(sContext, 155, 195, 155, 205);
-    GrLineDraw(sContext, 156, 195, 156, 205);
-    GrLineDraw(sContext, 175, 240, 160, 200);
+    GrLineDraw(sContext, 135+15, 240, 150+15, 200);
+    GrLineDraw(sContext, 154+15, 195, 154+15, 205);
+    GrLineDraw(sContext, 155+15, 195, 155+15, 205);
+    GrLineDraw(sContext, 156+15, 195, 156+15, 205);
+    GrLineDraw(sContext, 175+15, 240, 160+15, 200);
 }
 
 void DrawShot(tContext *sContext){
     GrContextForegroundSet(sContext, ClrYellow);
-    GrLineDraw(sContext, 147, 210, 135, 190);
-    GrLineDraw(sContext, 165, 210, 175, 190);
+    GrLineDraw(sContext, 147+15, 210, 135+15, 190);
+    GrLineDraw(sContext, 165+15, 210, 175+15, 190);
 
-    GrLineDraw(sContext, 135, 190, 145, 195);
-    GrLineDraw(sContext, 175, 190, 165, 195);
+    GrLineDraw(sContext, 135+15, 190, 145+15, 195);
+    GrLineDraw(sContext, 175+15, 190, 165+15, 195);
 
-    GrLineDraw(sContext, 155, 175, 145, 195);
-    GrLineDraw(sContext, 155, 175, 165, 195);
+    GrLineDraw(sContext, 155+15, 175, 145+15, 195);
+    GrLineDraw(sContext, 155+15, 175, 165+15, 195);
 }
 
 void DrawMenuTitle(tContext *sContext){
@@ -541,6 +541,9 @@ float yaw = 0;
 int shotAnimTime = 0;
 int ammo = 50;
 int health = 100;
+bool shot = false;
+bool shotMeshCounter = 0;
+bool shoted = false;
 while(true){
     
     if(fpsI == fps){
@@ -551,7 +554,7 @@ while(true){
         if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_4) == GPIO_PIN_4){ vCamera = Vector_Sub(&vCamera, &vForward);}
         if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_3) == GPIO_PIN_3){ vCamera.y += 1.0f * fElapsedTime;}
         if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_2) == GPIO_PIN_2){ vCamera.y -= 1.0f * fElapsedTime;}
-        if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_1) == GPIO_PIN_1){ shotAnimTime = 100; ammo--;;}
+        if(GPIOPinRead(GPIO_PORTJ_BASE,GPIO_PIN_1) == GPIO_PIN_1){ shotAnimTime = 100; ammo--; shot = true;}
         _clear_screen(&sContext);
 
         vec3d vUp = {0,1,0};
@@ -773,11 +776,19 @@ while(true){
                         triProjected.p[2].x *= 0.5f * (float)MAXW;
                         triProjected.p[2].y *= 0.5f * (float)MAXH;
 
+                        //GrLineDraw(&sContext, 110, 240, 110, 0);
+                        //GrLineDraw(&sContext, 230, 240, 230, 0);
                         // Rasterize triangle
+                        if(shot && (triProjected.p[0].x>= 110) && (triProjected.p[0].x<= 230) && (triProjected.p[1].x>= 110) && (triProjected.p[1].x<= 230)&& (triProjected.p[2].x>= 110) && (triProjected.p[2].x<= 230) ){shotMeshCounter++;}
                         DrawTriangle(&sContext, triProjected.p[0].x, triProjected.p[0].y,
                             triProjected.p[1].x, triProjected.p[1].y,
                             triProjected.p[2].x, triProjected.p[2].y, ClrRed);
                     }
+                    printf("%d \n",meshEnemies.counter );
+                    if(shotMeshCounter == meshEnemies.counter){
+                        meshEnemies.counter = 0;
+                    }
+                    shotMeshCounter = 0;
                 }
             }
             fpsI = 0;
