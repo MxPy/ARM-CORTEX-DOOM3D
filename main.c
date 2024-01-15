@@ -393,7 +393,21 @@ void GenerateCorridorWestClosedX(mesh* meshCube, float x, float y, float z){
 
 void DrawGui(tContext *sContext){
     GrContextForegroundSet(sContext, ClrRed);
-    GrLineDraw(sContext, x1, y1, x2, y2);
+    GrStringDrawCentered(sContext, "50", -1, 50, 210, 0);
+    GrStringDrawCentered(sContext, "100", -1, 320-50, 210, 0);
+    GrContextForegroundSet(sContext, ClrWhite);
+    GrStringDrawCentered(sContext, "AMMO", -1, 50, 230, 0);
+    GrContextForegroundSet(sContext, ClrWhite);
+    GrStringDrawCentered(sContext, "HEALTH", -1, 320-50, 230, 0);
+}
+
+void DrawGun(tContext *sContext){
+    GrContextForegroundSet(sContext, ClrRed);
+    GrLineDraw(sContext, 135, 240, 150, 200);
+    GrLineDraw(sContext, 154, 195, 154, 205);
+    GrLineDraw(sContext, 155, 195, 155, 205);
+    GrLineDraw(sContext, 156, 195, 156, 205);
+    GrLineDraw(sContext, 175, 240, 160, 200);
 }
 
 int main(void)
@@ -436,6 +450,7 @@ mat4x4 matProj;
 float fThetaZ;
 float fThetaX;
 float fThetaY;
+GrContextFontSet(&sContext, g_psFontCm20b);
 
 int jj=0;
 while(jj<=50){
@@ -447,11 +462,6 @@ while(jj<=50){
 }
 createPlaneWEST(&meshCube, -5.0f, 1.0f-10.0f, -5.0f, 10.0f);
 //createPlaneNORTH(&meshCube, -5.0f, 1.0f-10.0f, -5.0f, 10.0f);
-
-
-
-
-
 
 float fNear = 0.1f;
 float fFar = 1000.0f;
@@ -468,9 +478,9 @@ matProj.m[3][3] = 0.0f;
 vec3d vCamera = {0, 0 ,0};
 vec3d vLookDir = {0, 0 ,1};
 
-float fElapsedTime = 0.1;
+float fElapsedTime = 0.3;
 
-int fps = 10000000;
+int fps = 1000000;
 int fpsI = 0;
 float x = 0.0f;
 float y = 0.0f;
@@ -599,29 +609,31 @@ while(true){
                     triangle clipped[2];
                     nClippedTriangles = Triangle_ClipAgainstPlane((vec3d){ 0.0f, 0.0f, 0.1f, 1.0f }, (vec3d){ 0.0f, 0.0f, 1.0f, 1.0f }, &triViewd, &clipped[0], &clipped[1]);
                     for (int n = 0; n < nClippedTriangles; n++)
-				{
-                    MultiplyMatrixVector(&clipped->p[0], &triProjected.p[0], &matProj);
-                    MultiplyMatrixVector(&clipped->p[1], &triProjected.p[1], &matProj);
-                    MultiplyMatrixVector(&clipped->p[2], &triProjected.p[2], &matProj);
-                    
+				    {
+                        MultiplyMatrixVector(&clipped->p[0], &triProjected.p[0], &matProj);
+                        MultiplyMatrixVector(&clipped->p[1], &triProjected.p[1], &matProj);
+                        MultiplyMatrixVector(&clipped->p[2], &triProjected.p[2], &matProj);
+                        
 
-                    // Scale into view
-                    triProjected.p[0].x += 1.0f; triProjected.p[0].y += 1.0f;
-                    triProjected.p[1].x += 1.0f; triProjected.p[1].y += 1.0f;
-                    triProjected.p[2].x += 1.0f; triProjected.p[2].y += 1.0f;
-                    triProjected.p[0].x *= 0.5f * (float)MAXW;
-                    triProjected.p[0].y *= 0.5f * (float)MAXH;
-                    triProjected.p[1].x *= 0.5f * (float)MAXW;
-                    triProjected.p[1].y *= 0.5f * (float)MAXH;
-                    triProjected.p[2].x *= 0.5f * (float)MAXW;
-                    triProjected.p[2].y *= 0.5f * (float)MAXH;
+                        // Scale into view
+                        triProjected.p[0].x += 1.0f; triProjected.p[0].y += 1.0f;
+                        triProjected.p[1].x += 1.0f; triProjected.p[1].y += 1.0f;
+                        triProjected.p[2].x += 1.0f; triProjected.p[2].y += 1.0f;
+                        triProjected.p[0].x *= 0.5f * (float)MAXW;
+                        triProjected.p[0].y *= 0.5f * (float)MAXH;
+                        triProjected.p[1].x *= 0.5f * (float)MAXW;
+                        triProjected.p[1].y *= 0.5f * (float)MAXH;
+                        triProjected.p[2].x *= 0.5f * (float)MAXW;
+                        triProjected.p[2].y *= 0.5f * (float)MAXH;
 
-                    // Rasterize triangle
-                    DrawTriangle(&sContext, triProjected.p[0].x, triProjected.p[0].y,
-                        triProjected.p[1].x, triProjected.p[1].y,
-                        triProjected.p[2].x, triProjected.p[2].y);
+                        // Rasterize triangle
+                        DrawTriangle(&sContext, triProjected.p[0].x, triProjected.p[0].y,
+                            triProjected.p[1].x, triProjected.p[1].y,
+                            triProjected.p[2].x, triProjected.p[2].y);
+                    }
                 }
-                }
+                DrawGui(&sContext);
+                DrawGun(&sContext);
 
             }
             fpsI = 0;
